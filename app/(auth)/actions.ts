@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { emailSchema, loginSchema, registerSchema } from "@/lib/validators/auth";
+import { passwordSchema } from "@/lib/validators/auth";
 
 const genericError = "/login?error=invalid";
 
@@ -51,4 +52,13 @@ export async function logout() {
     await supabase.auth.signOut();
   }
   redirect("/");
+}
+
+export async function updatePassword(formData: FormData) {
+  const parsed = passwordSchema.safeParse(formData.get("password"));
+  if (!parsed.success) redirect("/reset-password?error=invalid");
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data });
+  if (error) redirect("/reset-password?error=invalid");
+  redirect("/login?message=password-updated");
 }

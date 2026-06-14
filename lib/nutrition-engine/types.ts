@@ -13,6 +13,8 @@ export interface NutritionProfile {
   mealsPerDay: number;
   restrictions?: string[];
   allergies?: string[];
+  preferredFoods?: string[];
+  dislikedFoods?: string[];
   budget?: "low" | "medium" | "high";
   clinicalCondition?: boolean;
 }

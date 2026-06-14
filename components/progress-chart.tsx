@@ -3,21 +3,27 @@
 import { useSyncExternalStore } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-const data = [
-  { date: "01/05", weight: 72.8, waist: 84 },
-  { date: "08/05", weight: 72.2, waist: 83.5 },
-  { date: "15/05", weight: 71.9, waist: 83 },
-  { date: "22/05", weight: 71.4, waist: 82.5 },
-  { date: "29/05", weight: 71.1, waist: 82 },
-  { date: "05/06", weight: 70.8, waist: 81.8 },
-];
+type Point = { date: string; weight: number; waist?: number | null };
 
-export function ProgressChart() {
+export function ProgressChart({ data }: { data: Point[] }) {
   const mounted = useSyncExternalStore(
     () => () => undefined,
     () => true,
     () => false,
   );
   if (!mounted) return <div className="h-72 w-full animate-pulse rounded-xl bg-emerald-50 dark:bg-emerald-950/30" aria-label="Carregando gráfico" />;
-  return <div className="h-72 w-full" aria-label="Gráfico de evolução de peso"><ResponsiveContainer minWidth={1} minHeight={1}><LineChart data={data}><CartesianGrid strokeDasharray="3 3" opacity={.25}/><XAxis dataKey="date" fontSize={12}/><YAxis domain={["dataMin - 1","dataMax + 1"]} fontSize={12}/><Tooltip/><Line type="monotone" dataKey="weight" stroke="#059669" strokeWidth={3} dot={{r:4}} name="Peso (kg)"/></LineChart></ResponsiveContainer></div>;
+  if (!data.length) return <div className="grid h-72 place-items-center rounded-xl border border-dashed border-emerald-200"><p className="muted text-sm">Registre seu primeiro progresso para visualizar o gráfico.</p></div>;
+  return (
+    <div className="h-72 w-full" aria-label="Gráfico de evolução de peso">
+      <ResponsiveContainer minWidth={1} minHeight={1}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+          <XAxis dataKey="date" fontSize={12} />
+          <YAxis domain={["dataMin - 1", "dataMax + 1"]} fontSize={12} />
+          <Tooltip />
+          <Line type="monotone" dataKey="weight" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} name="Peso (kg)" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }

@@ -23,4 +23,14 @@ describe("nutrition engine", () => {
     const result = generateMealPlan({ ...profile, restrictions: ["vegano"] });
     expect(result.meals.some((m) => /lentilha|grão/i.test(m.items[0].name))).toBe(true);
   });
+  it("adapts dairy for lactose restriction", () => {
+    const result = generateMealPlan({ ...profile, mealsPerDay: 6, restrictions: ["intolerância à lactose"] });
+    expect(result.meals).toHaveLength(6);
+    expect(result.meals.some((m) => /iogurte vegetal/i.test(m.items[0].name))).toBe(true);
+    expect(result.meals.some((m) => /iogurte natural/i.test(m.items[0].name))).toBe(false);
+  });
+  it("replaces egg-based meals for egg allergy", () => {
+    const result = generateMealPlan({ ...profile, mealsPerDay: 6, allergies: ["ovo"] });
+    expect(result.meals.some((m) => /omelete/i.test(m.items[0].name))).toBe(false);
+  });
 });

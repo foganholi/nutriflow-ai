@@ -53,15 +53,17 @@ export function validateSafetyLimits(profile: NutritionProfile, calorieTarget: n
 const foodSets = {
   standard: [
     ["Aveia com banana e iogurte", "1 tigela", 390, 18, 58, 10],
-    ["Arroz, feijão, frango e salada", "1 prato equilibrado", 610, 43, 72, 16],
     ["Maçã e castanhas", "1 porção", 220, 5, 28, 11],
+    ["Arroz, feijão, frango e salada", "1 prato equilibrado", 610, 43, 72, 16],
+    ["Iogurte natural com fruta", "1 pote e 1 fruta", 210, 10, 30, 6],
     ["Omelete, mandioca e legumes", "1 prato", 480, 30, 48, 18],
     ["Iogurte natural", "1 pote", 130, 8, 14, 5],
   ],
   vegan: [
     ["Aveia, banana e bebida vegetal", "1 tigela", 370, 11, 67, 8],
-    ["Arroz, feijão, lentilha e salada", "1 prato equilibrado", 590, 25, 94, 12],
     ["Fruta e pasta de amendoim", "1 porção", 230, 7, 30, 10],
+    ["Arroz, feijão, lentilha e salada", "1 prato equilibrado", 590, 25, 94, 12],
+    ["Fruta e sementes", "1 porção", 190, 6, 28, 8],
     ["Grão-de-bico, batata e legumes", "1 prato", 500, 21, 78, 12],
     ["Homus com cenoura", "1 porção", 150, 5, 19, 6],
   ],
@@ -82,13 +84,28 @@ export function generateMealPlan(profile: NutritionProfile): MealPlan {
       disclaimer: "Procure acompanhamento de pediatra e nutricionista.",
     };
   }
-  const isVegan = profile.restrictions?.some((r) => /vegan/i.test(r));
+  const restrictions = [...(profile.restrictions ?? []), ...(profile.allergies ?? [])].join(" ").toLowerCase();
+  const isVegan = /vegan/.test(restrictions);
+  const isVegetarian = isVegan || /vegetarian/.test(restrictions);
+  const dairyFree = /lactose|leite|latic[ií]nio/.test(restrictions);
+  const glutenFree = /gl[uú]ten|gluten/.test(restrictions);
+  const eggFree = /ovo|egg/.test(restrictions);
   const choices = isVegan ? foodSets.vegan : foodSets.standard;
-  const names = ["Café da manhã", "Almoço", "Lanche", "Jantar", "Ceia"];
-  const count = Math.min(5, Math.max(3, profile.mealsPerDay));
-  const baseTotal = choices.slice(0, count).reduce((sum, food) => sum + food[2], 0);
+  const adapted = choices.map((food) => {
+    let name = food[0] as string;
+    if (dairyFree) name = name.replace(/iogurte natural|iogurte/gi, "iogurte vegetal");
+    if (glutenFree) name = name.replace(/aveia/gi, "tapioca");
+    if (isVegetarian) name = name.replace(/frango/gi, "lentilha");
+    if (eggFree) name = name.replace(/omelete/gi, "grão-de-bico temperado");
+    const disliked = profile.dislikedFoods?.find((item) => name.toLowerCase().includes(item.toLowerCase()));
+    if (disliked) name = `Alternativa ao grupo de ${disliked}`;
+    return [name, food[1], food[2], food[3], food[4], food[5]] as const;
+  });
+  const names = ["Café da manhã", "Lanche da manhã", "Almoço", "Lanche da tarde", "Jantar", "Ceia"];
+  const count = Math.min(6, Math.max(3, profile.mealsPerDay));
+  const baseTotal = adapted.slice(0, count).reduce((sum, food) => sum + food[2], 0);
   const scale = safety.safeCalories / baseTotal;
-  const meals: Meal[] = choices.slice(0, count).map((food, index) => {
+  const meals: Meal[] = adapted.slice(0, count).map((food, index) => {
     const item = itemFrom(food);
     item.calories = Math.round(item.calories * scale);
     return { name: names[index], items: [item], calories: item.calories };

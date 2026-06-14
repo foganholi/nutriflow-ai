@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, BookOpen, Home, ListChecks, LogOut, Settings, ShoppingBasket, Shield, Sparkles } from "lucide-react";
+import { Apple, BarChart3, BookOpen, Home, ListChecks, LogOut, Settings, ShoppingBasket, Shield, Sparkles } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { logout } from "@/app/(auth)/actions";
 
@@ -9,6 +9,7 @@ const nav = [
   [ShoppingBasket, "Lista de compras", "/shopping-list"],
   [BarChart3, "Progresso", "/progress"],
   [ListChecks, "Hábitos", "/habits"],
+  [Apple, "Alimentos", "/foods"],
   [BookOpen, "Conteúdo", "/education"],
   [Settings, "Configurações", "/settings"],
 ];
