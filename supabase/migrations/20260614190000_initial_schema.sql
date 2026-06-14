@@ -169,7 +169,8 @@ create policy food_read on public.food_database for select to anon, authenticate
 create policy food_admin_insert on public.food_database for insert to authenticated with check ((select private.is_admin()));
 create policy food_admin_update on public.food_database for update to authenticated using ((select private.is_admin())) with check ((select private.is_admin()));
 create policy food_admin_delete on public.food_database for delete to authenticated using ((select private.is_admin()));
-create policy sources_read on public.scientific_sources for select to anon, authenticated using (active or (select private.is_admin()));
+create policy sources_public_read on public.scientific_sources for select to anon using (active);
+create policy sources_authenticated_read on public.scientific_sources for select to authenticated using (active or (select private.is_admin()));
 create policy sources_admin_insert on public.scientific_sources for insert to authenticated with check ((select private.is_admin()));
 create policy sources_admin_update on public.scientific_sources for update to authenticated using ((select private.is_admin())) with check ((select private.is_admin()));
 create policy sources_admin_delete on public.scientific_sources for delete to authenticated using ((select private.is_admin()));
