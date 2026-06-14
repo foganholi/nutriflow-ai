@@ -11,8 +11,9 @@ Next.js App Router, TypeScript, Tailwind CSS, Supabase Auth/PostgreSQL/RLS, Zod,
 
 - Landing, preços, ciência, privacidade e termos.
 - Cadastro, login, confirmação e recuperação de senha.
-- Onboarding, dashboard, plano alimentar por regras, compras, progresso e hábitos.
-- Biblioteca brasileira, conteúdo educativo, configurações e admin protegido.
+- Onboarding persistente, dashboard, plano alimentar por regras, compras, progresso e hábitos.
+- Biblioteca brasileira no PostgreSQL, favoritos, conteúdo educativo e admin protegido.
+- Exportação de dados LGPD, PDF do plano, revogação de consentimento e exclusão de conta.
 - RLS, grants mínimos, headers, validação e documentação de testes de segurança.
 
 ## Rodar localmente
@@ -63,4 +64,5 @@ com redaction e revisão jurídica/clinico-nutricional.
 
 - GitHub: publicado em `foganholi/nutriflow-ai`.
 - Supabase: projeto ativo em `sa-east-1`, migrations aplicadas e Security Advisor sem alertas.
+- Edge Functions autenticadas: exclusão de conta e métricas administrativas agregadas.
 - Vercel: pendente de criação/autenticação de uma conta.

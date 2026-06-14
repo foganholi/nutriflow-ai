@@ -8,5 +8,9 @@ O motor em `lib/nutrition-engine` é determinístico e funciona sem IA paga. Ele
 aplica limites conservadores e gera refeições/substituições. Uma IA futura deve receber somente dados
 minimizados e anônimos, com o motor local como fallback.
 
+Server Actions autenticadas persistem onboarding, planos, compras, progresso, hábitos e favoritos.
+Exportações consultam somente o escopo liberado pelo JWT. Operações privilegiadas de exclusão de conta
+e métricas agregadas ficam em Edge Functions com autenticação obrigatória, sem secret key no Next.js.
+
 Vercel hospeda o front-end. Supabase fornece Auth e PostgreSQL. Pagamentos são uma extensão futura
 ligada à tabela `subscriptions`.

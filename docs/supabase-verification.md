@@ -24,6 +24,13 @@ Uma tentativa de inserir uma linha usando manualmente o `user_id` de B falhou co
 
 O teste foi executado em transação revertida. A consulta posterior confirmou zero usuários residuais.
 
+## Funções e administração
+
+- `delete-account` e `admin-metrics` exigem JWT e retornaram HTTP `401` sem sessão.
+- Usuário comum tentando inserir em `food_database` recebeu PostgreSQL `42501`.
+- O teste administrativo foi revertido e deixou zero usuários/alimentos residuais.
+- Catálogo atual: 20 alimentos e 6 fontes ativas.
+
 ## Advisors
 
 Os únicos avisos de performance remanescentes são índices ainda não utilizados, comportamento esperado
