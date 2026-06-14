@@ -112,7 +112,7 @@ create or replace function private.handle_new_user()
 returns trigger language plpgsql security definer set search_path = ''
 as $$
 begin
-  insert into public.profiles(id, full_name) values(new.id, left(coalesce(new.raw_user_meta_data->>'full_name','Usuário'),100));
+  insert into public.profiles(id, full_name) values(new.id, left(coalesce(new.raw_user_meta_data->>'full_name','Usuario'),100));
   insert into public.subscriptions(user_id) values(new.id);
   return new;
 end $$;
@@ -166,9 +166,13 @@ end $$;
 
 create policy subscriptions_select on public.subscriptions for select to authenticated using (user_id = (select auth.uid()));
 create policy food_read on public.food_database for select to anon, authenticated using (true);
-create policy food_admin_all on public.food_database for all to authenticated using ((select private.is_admin())) with check ((select private.is_admin()));
+create policy food_admin_insert on public.food_database for insert to authenticated with check ((select private.is_admin()));
+create policy food_admin_update on public.food_database for update to authenticated using ((select private.is_admin())) with check ((select private.is_admin()));
+create policy food_admin_delete on public.food_database for delete to authenticated using ((select private.is_admin()));
 create policy sources_read on public.scientific_sources for select to anon, authenticated using (active or (select private.is_admin()));
-create policy sources_admin_all on public.scientific_sources for all to authenticated using ((select private.is_admin())) with check ((select private.is_admin()));
+create policy sources_admin_insert on public.scientific_sources for insert to authenticated with check ((select private.is_admin()));
+create policy sources_admin_update on public.scientific_sources for update to authenticated using ((select private.is_admin())) with check ((select private.is_admin()));
+create policy sources_admin_delete on public.scientific_sources for delete to authenticated using ((select private.is_admin()));
 create policy audit_admin_read on public.audit_logs for select to authenticated using ((select private.is_admin()));
 
 revoke all on all tables in schema public from anon, authenticated;
@@ -183,8 +187,16 @@ create trigger meal_plans_updated before update on public.meal_plans for each ro
 create trigger subscriptions_updated before update on public.subscriptions for each row execute procedure private.set_updated_at();
 
 create index meal_plans_user_idx on public.meal_plans(user_id, created_at desc);
+create index meal_items_user_idx on public.meal_items(user_id);
+create index meal_items_plan_idx on public.meal_items(meal_plan_id);
+create index shopping_lists_user_idx on public.shopping_lists(user_id);
+create index shopping_lists_plan_idx on public.shopping_lists(meal_plan_id);
+create index shopping_list_items_user_idx on public.shopping_list_items(user_id);
+create index shopping_list_items_list_idx on public.shopping_list_items(shopping_list_id);
 create index progress_logs_user_idx on public.progress_logs(user_id, created_at desc);
+create index habits_user_idx on public.habits(user_id);
 create index habit_logs_user_date_idx on public.habit_logs(user_id, log_date desc);
+create index audit_logs_user_idx on public.audit_logs(user_id);
 create index audit_logs_created_idx on public.audit_logs(created_at desc);
 
 commit;

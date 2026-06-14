@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const data = [
@@ -13,8 +13,11 @@ const data = [
 ];
 
 export function ProgressChart() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   if (!mounted) return <div className="h-72 w-full animate-pulse rounded-xl bg-emerald-50 dark:bg-emerald-950/30" aria-label="Carregando gráfico" />;
   return <div className="h-72 w-full" aria-label="Gráfico de evolução de peso"><ResponsiveContainer minWidth={1} minHeight={1}><LineChart data={data}><CartesianGrid strokeDasharray="3 3" opacity={.25}/><XAxis dataKey="date" fontSize={12}/><YAxis domain={["dataMin - 1","dataMax + 1"]} fontSize={12}/><Tooltip/><Line type="monotone" dataKey="weight" stroke="#059669" strokeWidth={3} dot={{r:4}} name="Peso (kg)"/></LineChart></ResponsiveContainer></div>;
 }
