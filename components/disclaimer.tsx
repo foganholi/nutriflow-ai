@@ -1,13 +1,10 @@
 import { ShieldCheck } from "lucide-react";
 
-export function Disclaimer({ compact = false }: { compact?: boolean }) {
+export function Disclaimer({ compact = false, inverse = false }: { compact?: boolean; inverse?: boolean }) {
   return (
-    <div className={`flex gap-3 rounded-2xl border border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100 ${compact ? "p-3 text-xs" : "p-4 text-sm"}`}>
-      <ShieldCheck className="mt-0.5 shrink-0 text-blue-600" size={18} aria-hidden="true" />
-      <p>
-        Este aplicativo oferece estimativas e apoio educacional. Não substitui nutricionista,
-        médico ou outro profissional de saúde. Casos clínicos e necessidades específicas exigem orientação profissional.
-      </p>
+    <div className={`flex gap-3 rounded-2xl border border-cyan-300/25 bg-gradient-to-r from-indigo-500/8 to-cyan-400/8 ${inverse ? "text-indigo-100" : "text-indigo-950 dark:border-cyan-300/15 dark:text-indigo-100"} ${compact ? "p-3 text-xs" : "p-4 text-sm"}`}>
+      <ShieldCheck className="mt-0.5 shrink-0 text-cyan-500" size={18} aria-hidden="true" />
+      <p>Este aplicativo oferece estimativas e apoio educacional. Não substitui nutricionista, médico ou outro profissional de saúde. Casos clínicos e necessidades específicas exigem orientação profissional.</p>
     </div>
   );
 }

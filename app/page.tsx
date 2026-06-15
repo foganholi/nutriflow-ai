@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, BrainCircuit, Check, Clock3, Coins, ListChecks, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, BrainCircuit, Check, Clock3, Coins, DatabaseZap, ListChecks, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Disclaimer } from "@/components/disclaimer";
 import { LandingDashboard } from "@/components/landing-dashboard";
 import { SiteFooter } from "@/components/site-footer";
@@ -20,15 +20,15 @@ export default function Home() {
       <SiteHeader />
       <main>
         <section className="grid-pattern overflow-hidden pb-24 pt-16 md:pb-32 md:pt-24">
-          <div className="container grid items-center gap-14 lg:grid-cols-[1.05fr_.95fr]">
-            <div>
-              <span className="pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold"><BadgeCheck size={14}/> Alimentação com responsabilidade</span>
+          <div className="container relative z-10 grid items-center gap-14 lg:grid-cols-[1.05fr_.95fr]">
+            <div className="relative">
+              <div className="absolute -left-20 -top-20 size-44 rounded-full bg-violet-400/15 blur-3xl" />
+              <span className="pill relative inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold"><BadgeCheck size={14}/> NUTRITION INTELLIGENCE PLATFORM</span>
               <h1 className="mt-6 max-w-3xl text-5xl font-black leading-[1.03] tracking-[-.05em] md:text-7xl">
-                Sua alimentação em um <span className="text-gradient">fluxo mais leve.</span>
+                Sua alimentação em um <span className="text-gradient">novo sistema.</span>
               </h1>
               <p className="muted mt-6 max-w-2xl text-lg leading-8 md:text-xl">
-                Monte uma rotina alimentar personalizada, acompanhe sua evolução e organize sua dieta
-                com apoio de ciência, tecnologia e segurança.
+                Uma central inteligente para transformar seus dados, preferências e rotina em um plano alimentar claro, adaptável e seguro.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link className="btn-primary" href="/register">Criar meu plano <ArrowRight size={17}/></Link>
@@ -37,6 +37,9 @@ export default function Home() {
               <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                 {["Sem cartão", "Plano gratuito", "Privacidade por padrão"].map((item) => <span key={item} className="flex items-center gap-1.5"><Check className="text-emerald-600" size={16}/>{item}</span>)}
               </div>
+              <div className="mt-8 grid max-w-xl grid-cols-3 gap-2">
+                {[[Zap, "Motor", "Adaptativo"], [DatabaseZap, "Dados", "Protegidos"], [BrainCircuit, "Insights", "Práticos"]].map(([Icon, label, value]) => <div className="rounded-2xl border border-indigo-200/40 bg-white/50 p-3 backdrop-blur-md dark:border-indigo-800/40 dark:bg-indigo-950/20" key={String(label)}><Icon className="text-cyan-500" size={17}/><p className="mt-2 text-[10px] font-black uppercase tracking-wider text-indigo-500">{String(label)}</p><p className="text-xs font-bold">{String(value)}</p></div>)}
+              </div>
             </div>
             <LandingDashboard />
           </div>
@@ -44,11 +47,11 @@ export default function Home() {
 
         <section id="beneficios" className="py-24">
           <div className="container">
-            <div className="mx-auto max-w-2xl text-center"><p className="text-sm font-black uppercase tracking-[.2em] text-emerald-600">Mais clareza, menos complicação</p><h2 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Nutrição prática para a vida real</h2></div>
+            <div className="mx-auto max-w-2xl text-center"><p className="text-sm font-black uppercase tracking-[.2em] text-indigo-600">Inteligência aplicada à rotina</p><h2 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Tecnologia útil, sem perder o lado humano</h2></div>
             <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {benefits.map(([Icon, title, text]) => (
                 <article key={String(title)} className="card p-6 transition hover:-translate-y-1 hover:shadow-xl">
-                  <span className="mb-5 grid size-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950"><Icon size={21}/></span>
+                  <span className="mb-5 grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-violet-500/15 to-cyan-400/15 text-indigo-600 dark:text-cyan-300"><Icon size={21}/></span>
                   <h3 className="text-lg font-black">{String(title)}</h3><p className="muted mt-2 text-sm leading-6">{String(text)}</p>
                 </article>
               ))}
@@ -56,14 +59,14 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="como-funciona" className="bg-emerald-950 py-24 text-white">
-          <div className="container"><p className="text-sm font-black uppercase tracking-[.2em] text-emerald-300">Como funciona</p><h2 className="mt-3 text-4xl font-black">Três passos para começar</h2>
+        <section id="como-funciona" className="tech-panel rounded-none border-x-0 py-24 text-white">
+          <div className="container relative z-10"><p className="text-sm font-black uppercase tracking-[.2em] text-cyan-300">Como funciona</p><h2 className="mt-3 text-4xl font-black">Do dado à ação em três etapas</h2>
             <div className="mt-12 grid gap-8 md:grid-cols-3">
               {[
                 ["01", "Conte sua rotina", "Informe objetivo, preferências, restrições, tempo e orçamento."],
                 ["02", "Receba seu plano", "O motor aplica regras nutricionais conservadoras e cria opções realistas."],
                 ["03", "Acompanhe e ajuste", "Registre hábitos e evolução. Recalcule quando sua rotina mudar."],
-              ].map(([n,t,d]) => <div key={n}><span className="text-5xl font-black text-emerald-400/50">{n}</span><h3 className="mt-3 text-xl font-black">{t}</h3><p className="mt-2 leading-7 text-emerald-100/70">{d}</p></div>)}
+              ].map(([n,t,d]) => <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm" key={n}><span className="bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-5xl font-black text-transparent">{n}</span><h3 className="mt-3 text-xl font-black">{t}</h3><p className="mt-2 leading-7 text-indigo-100/65">{d}</p></div>)}
             </div>
           </div>
         </section>
@@ -75,12 +78,12 @@ export default function Home() {
 
         <section className="pb-24">
           <div className="container grid gap-5 lg:grid-cols-2">
-            <article className="overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-950 to-emerald-950 p-8 text-white">
-              <ShieldCheck className="text-emerald-300" size={30} />
-              <p className="mt-6 text-sm font-black uppercase tracking-[.2em] text-emerald-300">Privacidade como produto</p>
+            <article className="tech-panel rounded-[28px] p-8 text-white">
+              <div className="relative z-10"><ShieldCheck className="text-cyan-300" size={30} />
+              <p className="mt-6 text-sm font-black uppercase tracking-[.2em] text-cyan-300">Privacidade como produto</p>
               <h2 className="mt-3 text-3xl font-black">Seus dados não são parte do cardápio.</h2>
               <p className="mt-4 leading-7 text-white/70">Acesso isolado por usuário, RLS no PostgreSQL, exportação, revogação de consentimento e exclusão de conta.</p>
-              <Link className="btn-secondary mt-6" href="/privacy">Como protegemos seus dados</Link>
+              <Link className="btn-secondary mt-6" href="/privacy">Como protegemos seus dados</Link></div>
             </article>
             <article className="card p-8">
               <p className="text-sm font-black uppercase tracking-[.2em] text-emerald-600">Freemium transparente</p>

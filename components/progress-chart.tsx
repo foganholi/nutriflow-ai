@@ -11,8 +11,8 @@ export function ProgressChart({ data }: { data: Point[] }) {
     () => true,
     () => false,
   );
-  if (!mounted) return <div className="h-72 w-full animate-pulse rounded-xl bg-emerald-50 dark:bg-emerald-950/30" aria-label="Carregando gráfico" />;
-  if (!data.length) return <div className="grid h-72 place-items-center rounded-xl border border-dashed border-emerald-200"><p className="muted text-sm">Registre seu primeiro progresso para visualizar o gráfico.</p></div>;
+  if (!mounted) return <div className="h-72 w-full animate-pulse rounded-xl bg-indigo-50 dark:bg-indigo-950/30" aria-label="Carregando gráfico" />;
+  if (!data.length) return <div className="grid h-72 place-items-center rounded-xl border border-dashed border-indigo-200"><p className="muted text-sm">Registre seu primeiro progresso para visualizar o gráfico.</p></div>;
   return (
     <div className="h-72 w-full" aria-label="Gráfico de evolução de peso">
       <ResponsiveContainer minWidth={1} minHeight={1}>
@@ -21,7 +21,7 @@ export function ProgressChart({ data }: { data: Point[] }) {
           <XAxis dataKey="date" fontSize={12} />
           <YAxis domain={["dataMin - 1", "dataMax + 1"]} fontSize={12} />
           <Tooltip />
-          <Line type="monotone" dataKey="weight" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} name="Peso (kg)" />
+          <Line type="monotone" dataKey="weight" stroke="#6d4aff" strokeWidth={3} dot={{ r: 4, fill: "#06b6d4" }} name="Peso (kg)" />
         </LineChart>
       </ResponsiveContainer>
     </div>
