@@ -4,6 +4,22 @@ const activityFactors: Record<ActivityLevel, number> = {
   sedentary: 1.2, light: 1.375, moderate: 1.55, very_active: 1.725, athlete: 1.9,
 };
 
+function previewNumber(value: number, fallback: number, min: number, max: number) {
+  return Number.isFinite(value) && value >= min && value <= max ? value : fallback;
+}
+
+function normalizePreviewProfile(profile: NutritionProfile): NutritionProfile {
+  return {
+    ...profile,
+    age: Number.isFinite(profile.age) && profile.age > 0 && profile.age <= 120 ? profile.age : 30,
+    heightCm: previewNumber(profile.heightCm, 170, 120, 230),
+    weightKg: previewNumber(profile.weightKg, 70, 30, 350),
+    targetWeightKg: previewNumber(profile.targetWeightKg, 65, 30, 350),
+    mealsPerDay: previewNumber(profile.mealsPerDay, 4, 3, 6),
+    trainingFrequency: previewNumber(profile.trainingFrequency ?? 0, 0, 0, 14),
+  };
+}
+
 export function calculateBMI(weightKg: number, heightCm: number) {
   if (weightKg <= 0 || heightCm <= 0) throw new Error("Medidas inválidas.");
   return weightKg / ((heightCm / 100) ** 2);
@@ -162,20 +178,21 @@ function normalizeMealMacros(meals: Meal[], target: Macros) {
 }
 
 export function generateMealPlan(profile: NutritionProfile): MealPlan {
-  const bmr = calculateBMR(profile.weightKg, profile.heightCm, profile.age, profile.sex);
-  const target = calculateCalorieTarget(calculateTDEE(bmr, profile.activityLevel), profile.goal);
-  const safety = validateSafetyLimits(profile, target);
+  const normalizedProfile = normalizePreviewProfile(profile);
+  const bmr = calculateBMR(normalizedProfile.weightKg, normalizedProfile.heightCm, normalizedProfile.age, normalizedProfile.sex);
+  const target = calculateCalorieTarget(calculateTDEE(bmr, normalizedProfile.activityLevel), normalizedProfile.goal);
+  const safety = validateSafetyLimits(normalizedProfile, target);
   if (safety.blocked) {
     return {
-      calories: safety.safeCalories, macros: calculateMacros(safety.safeCalories, profile.weightKg, profile.goal),
+      calories: safety.safeCalories, macros: calculateMacros(safety.safeCalories, normalizedProfile.weightKg, normalizedProfile.goal),
       meals: [], warnings: [...safety.warnings, "A geração automática foi bloqueada para esta idade."],
       disclaimer: "Procure acompanhamento de pediatra e nutricionista.",
     };
   }
-  const restrictions = [...(profile.restrictions ?? []), ...(profile.allergies ?? [])].join(" ").toLowerCase();
-  const templates = buildMealTemplates(profile, restrictions);
+  const restrictions = [...(normalizedProfile.restrictions ?? []), ...(normalizedProfile.allergies ?? [])].join(" ").toLowerCase();
+  const templates = buildMealTemplates(normalizedProfile, restrictions);
   const names = ["Café da manhã", "Lanche da manhã", "Almoço", "Lanche da tarde", "Jantar", "Ceia"];
-  const count = Math.min(6, Math.max(3, profile.mealsPerDay));
+  const count = Math.min(6, Math.max(3, normalizedProfile.mealsPerDay));
   const selected = templates.slice(0, count);
   const baseTotal = selected.flat().reduce((sum, item) => sum + item.calories, 0);
   const scale = safety.safeCalories / baseTotal;
@@ -189,7 +206,7 @@ export function generateMealPlan(profile: NutritionProfile): MealPlan {
     meals[0].items[0].calories += difference;
     meals[0].calories += difference;
   }
-  const macros = calculateMacros(safety.safeCalories, profile.weightKg, profile.goal);
+  const macros = calculateMacros(safety.safeCalories, normalizedProfile.weightKg, normalizedProfile.goal);
   normalizeMealMacros(meals, macros);
   return {
     calories: safety.safeCalories,

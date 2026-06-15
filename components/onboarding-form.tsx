@@ -50,6 +50,9 @@ export function OnboardingForm({ initial }: { initial?: Partial<FormProfile> }) 
     allergies: profile.allergiesText.split(",").map((item) => item.trim()).filter(Boolean),
   }), [profile]);
   const plan = useMemo(() => generateMealPlan(nutritionProfile), [nutritionProfile]);
+  const waterLiters = profile.weightKg >= 30 && Number.isFinite(profile.weightKg)
+    ? `${Math.round(profile.weightKg * 35) / 1000} L`
+    : "Preencha o peso";
   const set = <K extends keyof FormProfile>(key: K, value: FormProfile[K]) =>
     setProfile((current) => ({ ...current, [key]: value }));
 
@@ -118,7 +121,7 @@ export function OnboardingForm({ initial }: { initial?: Partial<FormProfile> }) 
       {step === 2 && (
         <div>
           <div className="grid gap-3 sm:grid-cols-3">
-            {[["Calorias estimadas", `${plan.calories} kcal`], ["Proteínas", `${plan.macros.protein} g`], ["Água", `${Math.round(profile.weightKg * 35) / 1000} L`]].map(([label, value]) => <div className="card p-4" key={label}><p className="muted text-xs">{label}</p><p className="mt-1 text-2xl font-black">{value}</p></div>)}
+            {[["Calorias estimadas", `${plan.calories} kcal`], ["Proteínas", `${plan.macros.protein} g`], ["Água", waterLiters]].map(([label, value]) => <div className="card p-4" key={label}><p className="muted text-xs">{label}</p><p className="mt-1 text-2xl font-black">{value}</p></div>)}
           </div>
           {plan.warnings.map((warning) => <div key={warning} className="mt-3 flex gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-950"><ShieldAlert className="shrink-0" size={18} />{warning}</div>)}
           <p className="muted mt-5 text-sm">Ao salvar, o perfil, as preferências, os hábitos iniciais, o plano e a lista de compras serão protegidos pelo seu usuário.</p>

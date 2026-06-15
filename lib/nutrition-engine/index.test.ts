@@ -63,4 +63,10 @@ describe("nutrition engine", () => {
     const result = generateMealPlan({ ...profile, preferredFoods: ["mamão"] });
     expect(result.meals.flatMap((meal) => meal.items).some((item) => /mamão/i.test(item.name))).toBe(true);
   });
+  it("keeps the live preview stable while numeric fields are temporarily empty", () => {
+    expect(() => generateMealPlan({ ...profile, heightCm: 0, weightKg: Number.NaN, age: 0 })).not.toThrow();
+    const result = generateMealPlan({ ...profile, heightCm: 0, weightKg: 0 });
+    expect(result.meals.length).toBeGreaterThan(0);
+    expect(result.calories).toBeGreaterThanOrEqual(1200);
+  });
 });
