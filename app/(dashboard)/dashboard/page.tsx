@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, CheckCircle2, Circle, Droplets, Flame, Scale, Target } from "lucide-react";
 import { Disclaimer } from "@/components/disclaimer";
 import { MealPlanCard } from "@/components/meal-plan-card";
+import { ProgressChart } from "@/components/progress-chart";
 import { requireUser } from "@/lib/auth";
 import { calculateBMI, classifyBMI, estimateWaterIntake } from "@/lib/nutrition-engine";
 import type { Meal } from "@/lib/nutrition-engine/types";
@@ -15,14 +16,16 @@ const goalLabels = {
   eat_better: "Melhorar alimentação",
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const params = await searchParams;
   const { supabase, user } = await requireUser();
   const today = new Date().toISOString().slice(0, 10);
-  const [{ data: profile }, { data: preferences }, { data: plan }, { data: habits }] = await Promise.all([
+  const [{ data: profile }, { data: preferences }, { data: plan }, { data: habits }, { data: progress }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("nutrition_preferences").select("*").eq("user_id", user.id).maybeSingle(),
     supabase.from("meal_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("habits").select("id,title").eq("user_id", user.id).eq("active", true).order("created_at").limit(4),
+    supabase.from("progress_logs").select("weight_kg,waist_cm,created_at").eq("user_id", user.id).order("created_at", { ascending: true }).limit(12),
   ]);
   const nutritionProfile = profile ? toNutritionProfile(profile, preferences) : null;
   if (!nutritionProfile) redirect("/onboarding");
@@ -42,9 +45,15 @@ export default async function DashboardPage() {
   const bmi = calculateBMI(nutritionProfile.weightKg, nutritionProfile.heightCm);
   const firstName = String(profile.full_name ?? "Olá").split(" ")[0];
   const formattedDate = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+  const progressPoints = (progress ?? []).map((entry) => ({
+    date: new Date(entry.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+    weight: Number(entry.weight_kg),
+    waist: entry.waist_cm ? Number(entry.waist_cm) : null,
+  }));
 
   return (
     <div className="mx-auto max-w-6xl">
+      {params.profile && <p className="mb-5 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">Perfil atualizado com sucesso.</p>}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div><p className="text-sm font-black uppercase text-emerald-600">{formattedDate}</p><h1 className="mt-1 text-4xl font-black">Olá, {firstName}.</h1><p className="muted mt-2">{plan ? "Seu plano mais recente está pronto." : "Gere seu primeiro plano alimentar."}</p></div>
         <Link href="/meal-plan" className="btn-primary">Abrir plano <ArrowRight size={17} /></Link>
@@ -57,6 +66,7 @@ export default async function DashboardPage() {
           [Droplets, "Água estimada", `${estimateWaterIntake(nutritionProfile.weightKg)} L`],
         ].map(([Icon, label, value]) => <div className="card p-5" key={String(label)}><Icon className="text-emerald-600" size={21} /><p className="muted mt-4 text-xs">{String(label)}</p><p className="mt-1 font-black">{String(value)}</p></div>)}
       </div>
+      {plan && <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold"><span className="pill rounded-full px-3 py-1.5">{plan.protein_g}g proteína</span><span className="pill rounded-full px-3 py-1.5">{plan.carbs_g}g carboidratos</span><span className="pill rounded-full px-3 py-1.5">{plan.fat_g}g gorduras</span></div>}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_.8fr]">
         <section>
           <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black">Plano alimentar de hoje</h2><Link className="text-sm font-black text-emerald-700" href="/meal-plan">Ver completo</Link></div>
@@ -72,6 +82,10 @@ export default async function DashboardPage() {
           </div>
           <div className="card p-5"><p className="text-xs font-black text-blue-600">LEITURA CUIDADOSA</p><p className="mt-2 font-black">IMC: {classifyBMI(bmi)}</p><p className="muted mt-2 text-sm">É uma estimativa populacional e não avalia composição corporal.</p></div>
         </aside>
+      </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_.6fr]">
+        <section className="card p-5"><div className="flex items-center justify-between"><div><h2 className="font-black">Evolução recente</h2><p className="muted mt-1 text-sm">Registros de peso protegidos pela sua conta.</p></div><Link className="text-sm font-black text-emerald-700" href="/progress">Registrar</Link></div><ProgressChart data={progressPoints} /></section>
+        <aside className="card p-5"><h2 className="font-black">Atalhos</h2><div className="mt-4 grid gap-2"><Link className="btn-primary" href="/meal-plan">Plano alimentar</Link><Link className="btn-secondary" href="/shopping-list">Lista de compras</Link><Link className="btn-secondary" href="/education">Aprender</Link></div><p className="muted mt-5 text-xs">Dica: consistência semanal é mais útil do que buscar perfeição diária.</p></aside>
       </div>
       <div className="mt-6"><Disclaimer compact /></div>
     </div>

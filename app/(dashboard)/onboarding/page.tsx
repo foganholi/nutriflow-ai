@@ -32,6 +32,8 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
         preferredFoodsText: preferences?.preferred_foods?.join(", ") ?? "",
         dislikedFoodsText: preferences?.disliked_foods?.join(", ") ?? "",
         cookingTime: preferences?.cooking_time ?? "medium",
+        trainingFrequency: preferences?.training_frequency ?? 3,
+        trainingType: preferences?.training_type ?? "",
         countryRegion: preferences?.country_region ?? "Brasil",
         brazilianFoodMode: preferences?.brazilian_food_mode ?? true,
         clinicalCondition: preferences?.special_condition ?? false,

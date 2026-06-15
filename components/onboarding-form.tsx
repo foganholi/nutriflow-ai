@@ -12,6 +12,8 @@ type FormProfile = NutritionProfile & {
   preferredFoodsText: string;
   dislikedFoodsText: string;
   cookingTime: "little" | "medium" | "plenty";
+  trainingFrequency: number;
+  trainingType: string;
   countryRegion: string;
   brazilianFoodMode: boolean;
 };
@@ -32,6 +34,8 @@ const defaults: FormProfile = {
   preferredFoodsText: "",
   dislikedFoodsText: "",
   cookingTime: "medium",
+  trainingFrequency: 3,
+  trainingType: "",
   countryRegion: "Brasil",
   brazilianFoodMode: true,
   clinicalCondition: false,
@@ -67,6 +71,8 @@ export function OnboardingForm({ initial }: { initial?: Partial<FormProfile> }) 
       <input type="hidden" name="preferredFoods" value={profile.preferredFoodsText} />
       <input type="hidden" name="dislikedFoods" value={profile.dislikedFoodsText} />
       <input type="hidden" name="cookingTime" value={profile.cookingTime} />
+      <input type="hidden" name="trainingFrequency" value={profile.trainingFrequency} />
+      <input type="hidden" name="trainingType" value={profile.trainingType} />
       <input type="hidden" name="countryRegion" value={profile.countryRegion} />
       <input type="hidden" name="brazilianFoodMode" value={String(profile.brazilianFoodMode)} />
 
@@ -97,6 +103,8 @@ export function OnboardingForm({ initial }: { initial?: Partial<FormProfile> }) 
           <Field label="Refeições por dia"><select className="input" value={profile.mealsPerDay} onChange={(e) => set("mealsPerDay", Number(e.target.value))}>{[3, 4, 5, 6].map((number) => <option key={number}>{number}</option>)}</select></Field>
           <Field label="Orçamento"><select className="input" value={profile.budget} onChange={(e) => set("budget", e.target.value as FormProfile["budget"])}><option value="low">Baixo</option><option value="medium">Médio</option><option value="high">Alto</option></select></Field>
           <Field label="Tempo para cozinhar"><select className="input" value={profile.cookingTime} onChange={(e) => set("cookingTime", e.target.value as FormProfile["cookingTime"])}><option value="little">Pouco</option><option value="medium">Médio</option><option value="plenty">Bastante</option></select></Field>
+          <Field label="Treinos por semana"><input className="input" type="number" min="0" max="14" value={profile.trainingFrequency} onChange={(e) => set("trainingFrequency", Number(e.target.value))} /></Field>
+          <Field label="Tipo de treino"><input className="input" value={profile.trainingType} onChange={(e) => set("trainingType", e.target.value)} placeholder="Musculação, caminhada, corrida..." maxLength={150} /></Field>
           <Field label="País ou região"><input className="input" value={profile.countryRegion} onChange={(e) => set("countryRegion", e.target.value)} maxLength={100} /></Field>
           <Field label="Restrições (separe por vírgulas)"><input className="input" value={profile.restrictionsText} onChange={(e) => set("restrictionsText", e.target.value)} placeholder="Vegano, sem glúten" /></Field>
           <Field label="Alergias (separe por vírgulas)"><input className="input" value={profile.allergiesText} onChange={(e) => set("allergiesText", e.target.value)} placeholder="Amendoim, camarão" /></Field>

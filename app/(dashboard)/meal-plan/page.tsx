@@ -2,8 +2,10 @@ import { Download, RefreshCw } from "lucide-react";
 import { createAndPersistPlan } from "@/app/(dashboard)/actions";
 import { Disclaimer } from "@/components/disclaimer";
 import { MealPlanCard } from "@/components/meal-plan-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { requireUser } from "@/lib/auth";
 import type { Meal } from "@/lib/nutrition-engine/types";
+import { Utensils } from "lucide-react";
 
 export default async function MealPlanPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
@@ -49,7 +51,7 @@ export default async function MealPlanPage({ searchParams }: { searchParams: Pro
       {warnings.map((warning) => <p key={warning} className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-950">{warning}</p>)}
       {meals.length
         ? <div className="mt-7 grid gap-4 md:grid-cols-2">{meals.map((meal) => <MealPlanCard key={meal.name} meal={meal} />)}</div>
-        : <div className="card mt-7 p-8 text-center"><h2 className="text-xl font-black">Nenhum plano salvo</h2><p className="muted mt-2">Complete o onboarding para gerar estimativas personalizadas.</p></div>}
+        : <div className="mt-7"><EmptyState icon={Utensils} title="Nenhum plano salvo" description="Complete o onboarding para gerar estimativas personalizadas." /></div>}
       <div className="mt-6"><Disclaimer /></div>
     </div>
   );

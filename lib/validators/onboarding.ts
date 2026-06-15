@@ -10,6 +10,8 @@ export const onboardingSchema = z.object({
   goal: z.enum(["lose_weight", "gain_muscle", "maintain", "eat_better"]),
   activityLevel: z.enum(["sedentary", "light", "moderate", "very_active", "athlete"]),
   mealsPerDay: z.coerce.number().int().min(3).max(6),
+  trainingFrequency: z.coerce.number().int().min(0).max(14),
+  trainingType: z.string().trim().max(150),
   budget: z.enum(["low", "medium", "high"]),
   clinicalCondition: z.boolean().default(false),
 });

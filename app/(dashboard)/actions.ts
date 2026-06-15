@@ -46,6 +46,8 @@ export async function saveOnboarding(formData: FormData) {
     preferred_foods: list(formData.get("preferredFoods")),
     budget_level: data.budget,
     cooking_time: formData.get("cookingTime") || "medium",
+    training_frequency: data.trainingFrequency,
+    training_type: data.trainingType,
     meals_per_day: data.mealsPerDay,
     country_region: String(formData.get("countryRegion") || "Brasil").slice(0, 100),
     brazilian_food_mode: formData.get("brazilianFoodMode") !== "false",
@@ -53,8 +55,11 @@ export async function saveOnboarding(formData: FormData) {
   }, { onConflict: "user_id" });
   if (preferencesError) redirect("/onboarding?error=save");
 
-  const { count } = await supabase.from("habits").select("id", { count: "exact", head: true });
-  if (!count) {
+  const [{ count: habitCount }, { count: planCount }] = await Promise.all([
+    supabase.from("habits").select("id", { count: "exact", head: true }),
+    supabase.from("meal_plans").select("id", { count: "exact", head: true }),
+  ]);
+  if (!habitCount) {
     await supabase.from("habits").insert([
       "Beber a meta de água",
       "Comer frutas",
@@ -66,8 +71,8 @@ export async function saveOnboarding(formData: FormData) {
     ].map((title) => ({ user_id: user.id, title, frequency: "daily" })));
   }
 
-  await createAndPersistPlan();
-  redirect("/dashboard?onboarding=complete");
+  if (!planCount) await createAndPersistPlan();
+  redirect("/dashboard?profile=updated");
 }
 
 export async function createAndPersistPlan() {
@@ -75,7 +80,7 @@ export async function createAndPersistPlan() {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const [{ data: profile }, { data: preferences }, { data: subscription }, { count: recentPlans }] = await Promise.all([
     supabase.from("profiles").select("age,sex,height_cm,current_weight_kg,target_weight_kg,goal,activity_level,consent_lgpd").eq("id", user.id).single(),
-    supabase.from("nutrition_preferences").select("restrictions,allergies,preferred_foods,disliked_foods,budget_level,meals_per_day,special_condition").eq("user_id", user.id).maybeSingle(),
+    supabase.from("nutrition_preferences").select("restrictions,allergies,preferred_foods,disliked_foods,budget_level,meals_per_day,special_condition,training_frequency,training_type").eq("user_id", user.id).maybeSingle(),
     supabase.from("subscriptions").select("plan,status").eq("user_id", user.id).single(),
     supabase.from("meal_plans").select("id", { count: "exact", head: true }).eq("user_id", user.id).gte("created_at", weekAgo),
   ]);
@@ -118,21 +123,23 @@ export async function createAndPersistPlan() {
     redirect("/meal-plan?error=save");
   }
 
-  const { data: shoppingList } = await supabase.from("shopping_lists").insert({
-    user_id: user.id,
-    meal_plan_id: savedPlan.id,
-    title: "Compras da semana",
-    budget_mode: nutritionProfile.budget === "low" ? "economic" : nutritionProfile.budget === "high" ? "premium" : "balanced",
-  }).select("id").single();
-  if (shoppingList) {
-    const items = generateShoppingList(plan).map((item) => ({
+  for (const mode of ["economic", "balanced", "premium"] as const) {
+    const { data: shoppingList } = await supabase.from("shopping_lists").insert({
       user_id: user.id,
-      shopping_list_id: shoppingList.id,
-      category: item.category,
-      item_name: item.name,
-      quantity: item.quantity,
-    }));
-    await supabase.from("shopping_list_items").insert(items);
+      meal_plan_id: savedPlan.id,
+      title: `Compras da semana - ${mode}`,
+      budget_mode: mode,
+    }).select("id").single();
+    if (shoppingList) {
+      const shoppingItems = generateShoppingList(plan, mode).map((item) => ({
+        user_id: user.id,
+        shopping_list_id: shoppingList.id,
+        category: item.category,
+        item_name: item.name,
+        quantity: item.quantity,
+      }));
+      await supabase.from("shopping_list_items").insert(shoppingItems);
+    }
   }
 
   revalidatePath("/dashboard");
@@ -220,6 +227,15 @@ export async function toggleFavoriteFood(formData: FormData) {
   revalidatePath("/foods");
 }
 
+export async function toggleShoppingItem(formData: FormData) {
+  const itemId = z.string().uuid().safeParse(formData.get("itemId"));
+  const purchased = formData.get("purchased") !== "true";
+  if (!itemId.success) return;
+  const { supabase } = await requireUser();
+  await supabase.from("shopping_list_items").update({ purchased }).eq("id", itemId.data);
+  revalidatePath("/shopping-list");
+}
+
 const sourceSchema = z.object({
   title: z.string().trim().min(3).max(200),
   organization: z.string().trim().min(2).max(150),
@@ -274,4 +290,29 @@ export async function addFood(formData: FormData) {
   revalidatePath("/foods");
   revalidatePath("/admin");
   redirect("/admin?saved=food");
+}
+
+const educationalContentSchema = z.object({
+  title: z.string().trim().min(3).max(200),
+  slug: z.string().trim().regex(/^[a-z0-9-]+$/).max(200),
+  summary: z.string().trim().min(10).max(1000),
+  body: z.string().trim().min(30).max(12000),
+  readingMinutes: z.coerce.number().int().min(1).max(60),
+});
+
+export async function addEducationalContent(formData: FormData) {
+  const parsed = educationalContentSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin?error=content");
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("educational_contents").upsert({
+    title: parsed.data.title,
+    slug: parsed.data.slug,
+    summary: parsed.data.summary,
+    body: parsed.data.body,
+    reading_minutes: parsed.data.readingMinutes,
+  }, { onConflict: "slug" });
+  if (error) redirect("/admin?error=forbidden");
+  revalidatePath("/education");
+  revalidatePath("/admin");
+  redirect("/admin?saved=content");
 }

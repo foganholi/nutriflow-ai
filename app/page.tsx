@@ -73,6 +73,27 @@ export default function Home() {
           <Disclaimer />
         </div></section>
 
+        <section className="pb-24">
+          <div className="container grid gap-5 lg:grid-cols-2">
+            <article className="overflow-hidden rounded-[28px] bg-gradient-to-br from-blue-950 to-emerald-950 p-8 text-white">
+              <ShieldCheck className="text-emerald-300" size={30} />
+              <p className="mt-6 text-sm font-black uppercase tracking-[.2em] text-emerald-300">Privacidade como produto</p>
+              <h2 className="mt-3 text-3xl font-black">Seus dados não são parte do cardápio.</h2>
+              <p className="mt-4 leading-7 text-white/70">Acesso isolado por usuário, RLS no PostgreSQL, exportação, revogação de consentimento e exclusão de conta.</p>
+              <Link className="btn-secondary mt-6" href="/privacy">Como protegemos seus dados</Link>
+            </article>
+            <article className="card p-8">
+              <p className="text-sm font-black uppercase tracking-[.2em] text-emerald-600">Freemium transparente</p>
+              <h2 className="mt-3 text-3xl font-black">Comece grátis. Evolua quando precisar.</h2>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl bg-emerald-50 p-4 dark:bg-emerald-950/40"><p className="text-sm font-black">Gratuito</p><p className="mt-1 text-2xl font-black">R$ 0</p><p className="muted mt-2 text-xs">Um plano semanal, compras, progresso e biblioteca.</p></div>
+                <div className="rounded-2xl bg-blue-50 p-4 dark:bg-blue-950/40"><p className="text-sm font-black">Premium futuro</p><p className="mt-1 text-2xl font-black">R$ 14,90</p><p className="muted mt-2 text-xs">Planos ilimitados, PDF, histórico e modos avançados.</p></div>
+              </div>
+              <Link className="btn-primary mt-6" href="/pricing">Comparar planos <ArrowRight size={17} /></Link>
+            </article>
+          </div>
+        </section>
+
         <section id="faq" className="pb-24"><div className="container max-w-3xl"><h2 className="text-center text-4xl font-black">Perguntas frequentes</h2><div className="mt-10 space-y-3">
           {[
             ["O NutriFlow substitui um nutricionista?", "Não. O produto organiza informações e oferece estimativas educacionais. Avaliação clínica e prescrição individual são atividades profissionais."],

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateBMI, calculateBMR, calculateCalorieTarget, generateMealPlan, validateSafetyLimits } from ".";
+import { calculateBMI, calculateBMR, calculateCalorieTarget, generateMealPlan, generateShoppingList, validateSafetyLimits } from ".";
 import type { NutritionProfile } from "./types";
 
 const profile: NutritionProfile = {
@@ -32,5 +32,11 @@ describe("nutrition engine", () => {
   it("replaces egg-based meals for egg allergy", () => {
     const result = generateMealPlan({ ...profile, mealsPerDay: 6, allergies: ["ovo"] });
     expect(result.meals.some((m) => /omelete/i.test(m.items[0].name))).toBe(false);
+  });
+  it("creates distinct shopping modes", () => {
+    const plan = generateMealPlan(profile);
+    const economic = generateShoppingList(plan, "economic");
+    const premium = generateShoppingList(plan, "premium");
+    expect(economic.map((item) => item.name).join(" ")).not.toEqual(premium.map((item) => item.name).join(" "));
   });
 });

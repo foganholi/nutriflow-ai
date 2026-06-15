@@ -1,19 +1,34 @@
 import { Database, FileText, ShieldCheck, Sparkles, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { addFood, addScientificSource } from "@/app/(dashboard)/actions";
+import { addEducationalContent, addFood, addScientificSource } from "@/app/(dashboard)/actions";
 import { requireUser } from "@/lib/auth";
 
-type Metrics = { users: number; meal_plans: number; progress_logs: number; foods: number; scientific_sources: number };
+type Metrics = {
+  users: number;
+  meal_plans: number;
+  progress_logs: number;
+  foods: number;
+  scientific_sources: number;
+  educational_contents: number;
+};
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
   const { supabase } = await requireUser();
   const { data } = await supabase.functions.invoke<Metrics>("admin-metrics", { body: {} });
-  const metrics = data ?? { users: 0, meal_plans: 0, progress_logs: 0, foods: 0, scientific_sources: 0 };
+  const metrics = data ?? {
+    users: 0,
+    meal_plans: 0,
+    progress_logs: 0,
+    foods: 0,
+    scientific_sources: 0,
+    educational_contents: 0,
+  };
   const cards: Array<{ icon: LucideIcon; label: string; value: number }> = [
     { icon: Users, label: "Usuários", value: metrics.users },
     { icon: Sparkles, label: "Planos gerados", value: metrics.meal_plans },
     { icon: ShieldCheck, label: "Registros de progresso", value: metrics.progress_logs },
+    { icon: FileText, label: "Conteúdos educativos", value: metrics.educational_contents },
   ];
 
   return (
@@ -23,7 +38,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <p className="muted mt-2">Somente métricas agregadas e conteúdo público. Dados nutricionais individuais não são exibidos.</p>
       {params.saved && <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">Conteúdo salvo.</p>}
       {params.error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-900">Operação inválida ou não autorizada.</p>}
-      <div className="mt-7 grid gap-4 sm:grid-cols-3">
+      <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map(({ icon: Icon, label, value }) => <div className="card p-5" key={label}><Icon className="text-emerald-600" /><p className="muted mt-4 text-xs">{label}</p><p className="text-3xl font-black">{value}</p></div>)}
       </div>
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
@@ -46,6 +61,15 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           <button className="btn-primary">Salvar fonte</button>
         </form>
       </div>
+      <form action={addEducationalContent} className="card mt-5 grid gap-4 p-6 md:grid-cols-2">
+        <div className="md:col-span-2"><FileText className="text-violet-600" /><h2 className="mt-2 text-xl font-black">Adicionar conteúdo educativo</h2></div>
+        <label><span className="label">Título</span><input className="input" name="title" required /></label>
+        <label><span className="label">Slug</span><input className="input" name="slug" pattern="[a-z0-9-]+" placeholder="alimentacao-saudavel" required /></label>
+        <label className="md:col-span-2"><span className="label">Resumo</span><textarea className="input min-h-20" name="summary" required /></label>
+        <label className="md:col-span-2"><span className="label">Conteúdo</span><textarea className="input min-h-36" name="body" required /></label>
+        <label><span className="label">Tempo de leitura</span><input className="input" name="readingMinutes" type="number" min="1" max="60" defaultValue="3" required /></label>
+        <button className="btn-primary md:self-end">Salvar conteúdo</button>
+      </form>
     </div>
   );
 }

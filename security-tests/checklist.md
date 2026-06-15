@@ -10,3 +10,5 @@
 - [ ] Nenhuma chave secreta em bundle, logs ou Git
 - [ ] Headers validados em produção
 - [ ] Exportação e exclusão LGPD testadas
+- [ ] Limite semanal não pode ser contornado pela Data API
+- [ ] CAPTCHA e Auth rate limits configurados no painel

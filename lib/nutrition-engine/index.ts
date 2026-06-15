@@ -43,6 +43,7 @@ export function validateSafetyLimits(profile: NutritionProfile, calorieTarget: n
   if (profile.age < 18) warnings.push("Menores de idade precisam de acompanhamento responsável e profissional.");
   if (profile.age >= 65 && profile.goal === "lose_weight") warnings.push("Objetivos de perda de peso após 65 anos devem ser avaliados individualmente.");
   if (profile.clinicalCondition) warnings.push("Condições clínicas exigem orientação de nutricionista ou médico.");
+  if (profile.activityLevel === "athlete" || (profile.trainingFrequency ?? 0) >= 7) warnings.push("Rotinas de treino intensas ou alto rendimento exigem avaliação profissional individual.");
   if (Math.abs(profile.weightKg - profile.targetWeightKg) / profile.weightKg > 0.25) warnings.push("A meta informada é ampla; trabalhe em etapas e reavalie com um profissional.");
   if (calorieTarget < minimum) warnings.push(`O cálculo foi elevado ao limite conservador de ${minimum} kcal. Não recomendamos dietas extremas.`);
   const bmi = calculateBMI(profile.weightKg, profile.heightCm);
@@ -133,10 +134,23 @@ export function estimateWaterIntake(weightKg: number) {
   return Math.round(weightKg * 35 / 100) / 10;
 }
 
-export function generateShoppingList(plan: MealPlan) {
-  return plan.meals.flatMap((meal) => meal.items.map((item) => ({
-    name: item.name, quantity: "7 porções", category: /frango|ovo|lentilha|feijão|grão/i.test(item.name) ? "Proteínas" : /banana|maçã/i.test(item.name) ? "Frutas" : "Outros",
-  })));
+export function generateShoppingList(plan: MealPlan, mode: "economic" | "balanced" | "premium" = "balanced") {
+  const joined = plan.meals.flatMap((meal) => meal.items.map((item) => item.name)).join(" ").toLowerCase();
+  const protein = /vegan|lentilha|grão-de-bico/.test(joined)
+    ? mode === "premium" ? "Tofu e grão-de-bico" : "Feijão e lentilha"
+    : mode === "economic" ? "Ovos e frango" : mode === "premium" ? "Peixe e cortes magros" : "Frango e ovos";
+  const fruit = mode === "premium" ? "Frutas variadas da estação" : "Banana e maçã";
+  const carb = mode === "economic" ? "Arroz, mandioca e aveia" : mode === "premium" ? "Arroz integral, quinoa e batata-doce" : "Arroz, batata e aveia";
+  return [
+    { name: protein, quantity: mode === "premium" ? "2,5 kg variados" : "2 kg variados", category: "Proteínas" },
+    { name: "Feijão ou leguminosa", quantity: "1 kg", category: "Proteínas" },
+    { name: carb, quantity: "Porções para 7 dias", category: "Carboidratos" },
+    { name: fruit, quantity: "14 unidades/porções", category: "Frutas" },
+    { name: "Folhas e verduras", quantity: "4 maços ou unidades", category: "Verduras" },
+    { name: "Tomate, cenoura e legumes", quantity: "2 kg variados", category: "Legumes" },
+    { name: /iogurte vegetal/.test(joined) ? "Iogurte vegetal" : "Iogurte natural", quantity: "7 porções", category: "Laticínios e alternativas" },
+    { name: mode === "economic" ? "Temperos básicos" : "Azeite, ervas e temperos", quantity: "Conforme necessidade", category: "Outros" },
+  ];
 }
 
 export type { NutritionProfile, MealPlan, Macros };

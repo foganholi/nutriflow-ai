@@ -6,12 +6,13 @@ const handler = {
     const { data: profile } = await ctx.supabase.from("profiles").select("role").single();
     if (profile?.role !== "admin") return Response.json({ error: "forbidden" }, { status: 403 });
 
-    const [users, plans, progress, foods, sources] = await Promise.all([
+    const [users, plans, progress, foods, sources, educationalContents] = await Promise.all([
       ctx.supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
       ctx.supabaseAdmin.from("meal_plans").select("id", { count: "exact", head: true }),
       ctx.supabaseAdmin.from("progress_logs").select("id", { count: "exact", head: true }),
       ctx.supabaseAdmin.from("food_database").select("id", { count: "exact", head: true }),
       ctx.supabaseAdmin.from("scientific_sources").select("id", { count: "exact", head: true }),
+      ctx.supabaseAdmin.from("educational_contents").select("id", { count: "exact", head: true }),
     ]);
 
     return Response.json({
@@ -20,6 +21,7 @@ const handler = {
       progress_logs: progress.count ?? 0,
       foods: foods.count ?? 0,
       scientific_sources: sources.count ?? 0,
+      educational_contents: educationalContents.count ?? 0,
     });
   }),
 };

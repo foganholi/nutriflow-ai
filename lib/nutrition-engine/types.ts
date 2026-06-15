@@ -11,6 +11,8 @@ export interface NutritionProfile {
   goal: Goal;
   activityLevel: ActivityLevel;
   mealsPerDay: number;
+  trainingFrequency?: number;
+  trainingType?: string;
   restrictions?: string[];
   allergies?: string[];
   preferredFoods?: string[];

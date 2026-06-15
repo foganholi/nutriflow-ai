@@ -1,0 +1,5 @@
+[functions.delete-account]
+verify_jwt = false
+
+[functions.admin-metrics]
+verify_jwt = false

@@ -56,9 +56,10 @@ secretas no cliente. Use as URLs de produção nas configurações de Auth do Su
 
 ## Estrutura e próximos passos
 
-Veja `docs/architecture.md`, `docs/commercial-model.md`, `SECURITY.md`, `PRIVACY.md` e `TERMS.md`.
-Antes de venda real: rate limit distribuído, exportação/exclusão completas, pagamentos, monitoramento
-com redaction e revisão jurídica/clinico-nutricional.
+Veja `docs/ARCHITECTURE.md`, `docs/DEPLOY.md`, `docs/SUPABASE.md`, `docs/BUSINESS_MODEL.md`,
+`SECURITY.md`, `PRIVACY.md` e `TERMS.md`.
+Antes de venda real: CAPTCHA, SMTP próprio, pagamentos, monitoramento com redaction e revisão
+jurídica/clinico-nutricional.
 
 ## Estado das integrações
 

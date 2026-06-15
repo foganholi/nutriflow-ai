@@ -4,7 +4,7 @@ Projeto: `xyypvhcrlebkplcrjhtl` (`sa-east-1`).
 
 ## Resultado
 
-- 14 tabelas públicas com `relrowsecurity=true` e `relforcerowsecurity=true`.
+- 15 tabelas públicas com `relrowsecurity=true` e `relforcerowsecurity=true`.
 - Security Advisor: zero alertas após as migrations.
 - Policies privadas usam `auth.uid()` em `USING` e `WITH CHECK`.
 - Função administrativa fica no schema privado.
@@ -26,10 +26,11 @@ O teste foi executado em transação revertida. A consulta posterior confirmou z
 
 ## Funções e administração
 
-- `delete-account` e `admin-metrics` exigem JWT e retornaram HTTP `401` sem sessão.
+- `delete-account` e `admin-metrics` usam `@supabase/server` com `auth: "user"` e rejeitam chamadas sem sessão.
 - Usuário comum tentando inserir em `food_database` recebeu PostgreSQL `42501`.
 - O teste administrativo foi revertido e deixou zero usuários/alimentos residuais.
-- Catálogo atual: 20 alimentos e 6 fontes ativas.
+- O limite gratuito foi testado no banco: o primeiro plano passou e o segundo foi bloqueado em sete dias.
+- Catálogo atual: 20 alimentos, 6 fontes ativas e 8 conteúdos educativos.
 
 ## Advisors
 

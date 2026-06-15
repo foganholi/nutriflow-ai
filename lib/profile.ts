@@ -18,6 +18,8 @@ type PreferenceRow = {
   budget_level: NutritionProfile["budget"] | null;
   meals_per_day: number | null;
   special_condition: boolean | null;
+  training_frequency?: number | null;
+  training_type?: string | null;
 };
 
 export function toNutritionProfile(profile: ProfileRow, preferences: PreferenceRow | null): NutritionProfile | null {
@@ -40,6 +42,8 @@ export function toNutritionProfile(profile: ProfileRow, preferences: PreferenceR
     goal: profile.goal,
     activityLevel: profile.activity_level,
     mealsPerDay: preferences?.meals_per_day ?? 4,
+    trainingFrequency: preferences?.training_frequency ?? 0,
+    trainingType: preferences?.training_type ?? "",
     restrictions: preferences?.restrictions ?? [],
     allergies: preferences?.allergies ?? [],
     preferredFoods: preferences?.preferred_foods ?? [],

@@ -24,11 +24,14 @@ sensível em logs de aplicação.
 - CSP, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, Referrer e Permissions Policy.
 - Mensagens genéricas em login e recuperação de senha.
 - Constraints de banco e validação Zod.
+- Limite semanal e rate limit de planos/progresso reforçados por triggers no banco.
+- Edge Functions privilegiadas validam a sessão com `@supabase/server` antes de usar o cliente administrativo.
+- Supabase Auth aplica limites próprios; CAPTCHA deve ser habilitado antes do lançamento público.
 
 ## Riscos conhecidos
 
-- Rate limit distribuído deve ser configurado no provedor/WAF antes de produção; memória local não é adequada a serverless.
-- A exportação PDF é interface de MVP e requer implementação final com sanitização estrita.
+- CAPTCHA/Turnstile e SMTP próprio ainda dependem da configuração do painel de produção.
+- Limites adicionais no WAF da Vercel continuam recomendados para endpoints públicos.
 - Testes RLS reais exigem um projeto Supabase e dois usuários de teste isolados.
 
 ## Reporte
