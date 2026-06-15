@@ -1,16 +1,24 @@
-import { Download, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Download, RefreshCw, Utensils } from "lucide-react";
 import { createAndPersistPlan } from "@/app/(dashboard)/actions";
 import { Disclaimer } from "@/components/disclaimer";
 import { MealPlanCard } from "@/components/meal-plan-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { requireUser } from "@/lib/auth";
 import type { Meal } from "@/lib/nutrition-engine/types";
-import { Utensils } from "lucide-react";
 
 export default async function MealPlanPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
   const { supabase, user } = await requireUser();
-  const { data: plan } = await supabase.from("meal_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const requestedPlanId = /^[0-9a-f-]{36}$/i.test(params.plan ?? "") ? params.plan : null;
+  const [{ data: recentPlans }, { data: preferences }] = await Promise.all([
+    supabase.from("meal_plans").select("id,title,total_calories,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(8),
+    supabase.from("nutrition_preferences").select("restrictions,allergies").eq("user_id", user.id).maybeSingle(),
+  ]);
+  const planQuery = supabase.from("meal_plans").select("*").eq("user_id", user.id);
+  const { data: plan } = requestedPlanId
+    ? await planQuery.eq("id", requestedPlanId).maybeSingle()
+    : await planQuery.order("created_at", { ascending: false }).limit(1).maybeSingle();
   const { data: items } = plan
     ? await supabase.from("meal_items").select("*").eq("meal_plan_id", plan.id).order("created_at")
     : { data: [] };
@@ -31,6 +39,7 @@ export default async function MealPlanPage({ searchParams }: { searchParams: Pro
   }
   const meals = [...grouped.values()];
   const warnings = String(plan?.safety_notes ?? "").split("\n").filter(Boolean);
+  const restrictions = [...(preferences?.restrictions ?? []), ...(preferences?.allergies ?? [])];
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -50,8 +59,25 @@ export default async function MealPlanPage({ searchParams }: { searchParams: Pro
       {params.error && params.error !== "weekly-limit" && <p className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-900">Não foi possível gerar o plano. Revise seu onboarding.</p>}
       {warnings.map((warning) => <p key={warning} className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-950">{warning}</p>)}
       {meals.length
-        ? <div className="mt-7 grid gap-4 md:grid-cols-2">{meals.map((meal) => <MealPlanCard key={meal.name} meal={meal} />)}</div>
+        ? <div className="mt-7 grid gap-4 md:grid-cols-2">{meals.map((meal) => <MealPlanCard key={meal.name} meal={meal} restrictions={restrictions} />)}</div>
         : <div className="mt-7"><EmptyState icon={Utensils} title="Nenhum plano salvo" description="Complete o onboarding para gerar estimativas personalizadas." /></div>}
+      {(recentPlans?.length ?? 0) > 0 && (
+        <section className="card mt-6 p-5">
+          <div className="flex items-center gap-2"><CalendarDays className="text-blue-600" size={19} /><h2 className="font-black">Histórico de planos</h2></div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {recentPlans?.map((historyPlan) => (
+              <Link
+                className={`rounded-xl border p-3 text-sm transition hover:border-emerald-400 ${historyPlan.id === plan?.id ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30" : "border-emerald-950/10"}`}
+                href={`/meal-plan?plan=${historyPlan.id}`}
+                key={historyPlan.id}
+              >
+                <b className="block">{historyPlan.title}</b>
+                <span className="muted mt-1 block text-xs">{new Date(historyPlan.created_at).toLocaleDateString("pt-BR")} · {historyPlan.total_calories} kcal</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
       <div className="mt-6"><Disclaimer /></div>
     </div>
   );

@@ -18,6 +18,8 @@ export interface NutritionProfile {
   preferredFoods?: string[];
   dislikedFoods?: string[];
   budget?: "low" | "medium" | "high";
+  cookingTime?: "little" | "medium" | "plenty";
+  brazilianFoodMode?: boolean;
   clinicalCondition?: boolean;
 }
 

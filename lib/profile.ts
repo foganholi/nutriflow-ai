@@ -16,6 +16,8 @@ type PreferenceRow = {
   preferred_foods?: string[] | null;
   disliked_foods?: string[] | null;
   budget_level: NutritionProfile["budget"] | null;
+  cooking_time?: NutritionProfile["cookingTime"] | null;
+  brazilian_food_mode?: boolean | null;
   meals_per_day: number | null;
   special_condition: boolean | null;
   training_frequency?: number | null;
@@ -49,6 +51,8 @@ export function toNutritionProfile(profile: ProfileRow, preferences: PreferenceR
     preferredFoods: preferences?.preferred_foods ?? [],
     dislikedFoods: preferences?.disliked_foods ?? [],
     budget: preferences?.budget_level ?? "medium",
+    cookingTime: preferences?.cooking_time ?? "medium",
+    brazilianFoodMode: preferences?.brazilian_food_mode ?? true,
     clinicalCondition: preferences?.special_condition ?? false,
   };
 }

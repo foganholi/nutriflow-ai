@@ -51,27 +51,114 @@ export function validateSafetyLimits(profile: NutritionProfile, calorieTarget: n
   return { safeCalories: Math.max(calorieTarget, minimum), warnings, blocked: profile.age < 14 };
 }
 
-const foodSets = {
-  standard: [
-    ["Aveia com banana e iogurte", "1 tigela", 390, 18, 58, 10],
-    ["Maçã e castanhas", "1 porção", 220, 5, 28, 11],
-    ["Arroz, feijão, frango e salada", "1 prato equilibrado", 610, 43, 72, 16],
-    ["Iogurte natural com fruta", "1 pote e 1 fruta", 210, 10, 30, 6],
-    ["Omelete, mandioca e legumes", "1 prato", 480, 30, 48, 18],
-    ["Iogurte natural", "1 pote", 130, 8, 14, 5],
-  ],
-  vegan: [
-    ["Aveia, banana e bebida vegetal", "1 tigela", 370, 11, 67, 8],
-    ["Fruta e pasta de amendoim", "1 porção", 230, 7, 30, 10],
-    ["Arroz, feijão, lentilha e salada", "1 prato equilibrado", 590, 25, 94, 12],
-    ["Fruta e sementes", "1 porção", 190, 6, 28, 8],
-    ["Grão-de-bico, batata e legumes", "1 prato", 500, 21, 78, 12],
-    ["Homus com cenoura", "1 porção", 150, 5, 19, 6],
-  ],
-} as const;
+type FoodTuple = readonly [string, string, number, number, number, number];
 
-function itemFrom(data: readonly [string, string, number, number, number, number]): MealItem {
-  return { name: data[0], quantity: data[1], calories: data[2], protein: data[3], carbs: data[4], fat: data[5] };
+const food = (name: string, quantity: string, calories: number, protein: number, carbs: number, fat: number): FoodTuple =>
+  [name, quantity, calories, protein, carbs, fat];
+
+function adaptFood(data: FoodTuple, profile: NutritionProfile, restrictionText: string): MealItem {
+  let name = data[0];
+  const [, quantity, calories, protein, carbs, fat] = data;
+  const vegan = /vegan/.test(restrictionText);
+  const vegetarian = vegan || /vegetarian/.test(restrictionText);
+  const dairyFree = /lactose|leite|latic[ií]nio/.test(restrictionText);
+  const glutenFree = /gl[uú]ten|gluten/.test(restrictionText);
+  const eggFree = /ovo|egg/.test(restrictionText);
+
+  if (dairyFree) name = name.replace(/iogurte natural|iogurte|leite/gi, (value) => value.toLowerCase() === "leite" ? "bebida vegetal" : "iogurte vegetal");
+  if (glutenFree) name = name.replace(/aveia|pão integral|torrada integral/gi, "tapioca");
+  if (vegetarian) name = name.replace(/frango|carne moída|peixe|sardinha/gi, "lentilha");
+  if (eggFree) name = name.replace(/omelete|ovo cozido|ovos?/gi, "grão-de-bico temperado");
+
+  const disliked = profile.dislikedFoods?.find((item) => name.toLowerCase().includes(item.toLowerCase()));
+  if (disliked) name = `Alternativa do grupo de ${disliked}`;
+
+  return { name, quantity, calories, protein, carbs, fat };
+}
+
+function buildMealTemplates(profile: NutritionProfile, restrictionText: string) {
+  const vegan = /vegan/.test(restrictionText);
+  const lowBudget = profile.budget === "low";
+  const premium = profile.budget === "high";
+  const quick = profile.cookingTime === "little";
+  const brazilian = profile.brazilianFoodMode !== false;
+  const preferred = profile.preferredFoods?.find((item) => item.trim().length > 1);
+
+  const breakfastProtein = vegan
+    ? food("Pasta de amendoim", "1 colher de sopa", 90, 4, 3, 8)
+    : quick ? food("Iogurte natural", "1 pote", 120, 8, 14, 4) : food("Ovos mexidos", "2 unidades", 150, 13, 2, 10);
+  const lunchProtein = vegan
+    ? food("Lentilha cozida", "1 concha", 170, 12, 28, 1)
+    : lowBudget ? food("Frango grelhado", "1 filé médio", 220, 38, 0, 7)
+      : premium ? food("Peixe assado", "1 filé médio", 230, 36, 0, 9)
+        : food("Frango grelhado", "1 filé médio", 220, 38, 0, 7);
+  const dinnerProtein = vegan
+    ? food("Grão-de-bico temperado", "1 concha", 210, 11, 34, 4)
+    : quick ? food("Omelete com legumes", "2 ovos", 230, 16, 8, 15)
+      : food("Carne moída magra", "1 porção", 240, 32, 4, 10);
+  const staple = brazilian
+    ? [food("Arroz", "4 colheres de sopa", 170, 3, 37, 1), food("Feijão", "1 concha", 120, 7, 21, 1)]
+    : [food("Batata ou raiz cozida", "1 porção", 180, 4, 40, 1), food("Leguminosa", "1 concha", 130, 8, 22, 1)];
+
+  return [
+    [
+      food(glutenFreeName(restrictionText, "Aveia com banana"), "1 tigela", 250, 7, 48, 5),
+      breakfastProtein,
+    ],
+    [
+      food(preferred ? `${preferred} em porção moderada` : "Fruta da estação", "1 unidade ou porção", 90, 1, 22, 0),
+      lowBudget ? food("Amendoim torrado", "1 colher de sopa", 85, 4, 3, 7) : food("Castanhas", "1 porção pequena", 100, 3, 4, 9),
+    ],
+    [
+      ...staple,
+      lunchProtein,
+      food("Salada e legumes variados", "metade do prato", 80, 3, 14, 2),
+    ],
+    [
+      food(dairyName(restrictionText, "Iogurte natural"), "1 pote", 120, 8, 14, 4),
+      food("Fruta da estação", "1 unidade", 90, 1, 22, 0),
+    ],
+    [
+      dinnerProtein,
+      quick ? food("Legumes congelados refogados", "1 porção", 110, 4, 18, 3) : food("Legumes e folhas", "metade do prato", 100, 4, 18, 2),
+      food(brazilian ? "Mandioca ou batata" : "Batata ou cereal integral", "1 porção", 180, 3, 40, 1),
+    ],
+    [
+      vegan ? food("Homus", "3 colheres de sopa", 130, 5, 14, 6) : food(dairyName(restrictionText, "Iogurte natural"), "1 pote", 120, 8, 14, 4),
+      food("Fruta ou cenoura", "1 porção", 70, 1, 17, 0),
+    ],
+  ].map((meal) => meal.map((item) => adaptFood(item, profile, restrictionText)));
+}
+
+function glutenFreeName(restrictions: string, name: string) {
+  return /gl[uú]ten|gluten/.test(restrictions) ? name.replace(/aveia/gi, "Tapioca") : name;
+}
+
+function dairyName(restrictions: string, name: string) {
+  return /lactose|leite|latic[ií]nio|vegan/.test(restrictions) ? name.replace(/iogurte natural/gi, "Iogurte vegetal") : name;
+}
+
+function scaleItem(item: MealItem, scale: number): MealItem {
+  return {
+    ...item,
+    quantity: scale > 1.12 ? `${item.quantity} (porção reforçada)` : scale < 0.88 ? `${item.quantity} (porção reduzida)` : item.quantity,
+    calories: Math.round(item.calories * scale),
+    protein: Math.round(item.protein * scale),
+    carbs: Math.round(item.carbs * scale),
+    fat: Math.round(item.fat * scale),
+  };
+}
+
+function normalizeMealMacros(meals: Meal[], target: Macros) {
+  const items = meals.flatMap((meal) => meal.items);
+  for (const macro of ["protein", "carbs", "fat"] as const) {
+    const current = items.reduce((sum, item) => sum + item[macro], 0);
+    if (!current) continue;
+    const factor = target[macro] / current;
+    for (const item of items) item[macro] = Math.round(item[macro] * factor);
+    const difference = target[macro] - items.reduce((sum, item) => sum + item[macro], 0);
+    if (items[0]) items[0][macro] += difference;
+  }
 }
 
 export function generateMealPlan(profile: NutritionProfile): MealPlan {
@@ -86,34 +173,27 @@ export function generateMealPlan(profile: NutritionProfile): MealPlan {
     };
   }
   const restrictions = [...(profile.restrictions ?? []), ...(profile.allergies ?? [])].join(" ").toLowerCase();
-  const isVegan = /vegan/.test(restrictions);
-  const isVegetarian = isVegan || /vegetarian/.test(restrictions);
-  const dairyFree = /lactose|leite|latic[ií]nio/.test(restrictions);
-  const glutenFree = /gl[uú]ten|gluten/.test(restrictions);
-  const eggFree = /ovo|egg/.test(restrictions);
-  const choices = isVegan ? foodSets.vegan : foodSets.standard;
-  const adapted = choices.map((food) => {
-    let name = food[0] as string;
-    if (dairyFree) name = name.replace(/iogurte natural|iogurte/gi, "iogurte vegetal");
-    if (glutenFree) name = name.replace(/aveia/gi, "tapioca");
-    if (isVegetarian) name = name.replace(/frango/gi, "lentilha");
-    if (eggFree) name = name.replace(/omelete/gi, "grão-de-bico temperado");
-    const disliked = profile.dislikedFoods?.find((item) => name.toLowerCase().includes(item.toLowerCase()));
-    if (disliked) name = `Alternativa ao grupo de ${disliked}`;
-    return [name, food[1], food[2], food[3], food[4], food[5]] as const;
-  });
+  const templates = buildMealTemplates(profile, restrictions);
   const names = ["Café da manhã", "Lanche da manhã", "Almoço", "Lanche da tarde", "Jantar", "Ceia"];
   const count = Math.min(6, Math.max(3, profile.mealsPerDay));
-  const baseTotal = adapted.slice(0, count).reduce((sum, food) => sum + food[2], 0);
+  const selected = templates.slice(0, count);
+  const baseTotal = selected.flat().reduce((sum, item) => sum + item.calories, 0);
   const scale = safety.safeCalories / baseTotal;
-  const meals: Meal[] = adapted.slice(0, count).map((food, index) => {
-    const item = itemFrom(food);
-    item.calories = Math.round(item.calories * scale);
-    return { name: names[index], items: [item], calories: item.calories };
+  const meals: Meal[] = selected.map((items, index) => {
+    const scaledItems = items.map((item) => scaleItem(item, scale));
+    return { name: names[index], items: scaledItems, calories: scaledItems.reduce((sum, item) => sum + item.calories, 0) };
   });
+  const calculatedTotal = meals.reduce((sum, meal) => sum + meal.calories, 0);
+  const difference = safety.safeCalories - calculatedTotal;
+  if (meals[0]?.items[0] && difference) {
+    meals[0].items[0].calories += difference;
+    meals[0].calories += difference;
+  }
+  const macros = calculateMacros(safety.safeCalories, profile.weightKg, profile.goal);
+  normalizeMealMacros(meals, macros);
   return {
     calories: safety.safeCalories,
-    macros: calculateMacros(safety.safeCalories, profile.weightKg, profile.goal),
+    macros,
     meals,
     warnings: safety.warnings,
     disclaimer: "Valores aproximados para educação alimentar. Não substituem avaliação ou prescrição profissional.",
@@ -121,13 +201,24 @@ export function generateMealPlan(profile: NutritionProfile): MealPlan {
 }
 
 export function suggestFoodSwaps(food: string, restrictions: string[] = []) {
-  const vegan = restrictions.some((r) => /vegan/i.test(r));
-  const swaps: Record<string, string[]> = {
-    frango: vegan ? ["lentilha", "grão-de-bico", "tofu"] : ["ovo", "peixe", "carne magra"],
-    arroz: ["batata", "mandioca", "macarrão integral"],
-    leite: ["bebida de soja", "iogurte sem lactose", "bebida de aveia"],
-  };
-  return swaps[food.toLowerCase()] ?? ["alimento equivalente do mesmo grupo"];
+  const normalized = food.toLowerCase();
+  const joinedRestrictions = restrictions.join(" ").toLowerCase();
+  const vegan = /vegan/.test(joinedRestrictions);
+  const glutenFree = /gl[uú]ten|gluten/.test(joinedRestrictions);
+  const dairyFree = /lactose|leite|latic[ií]nio|vegan/.test(joinedRestrictions);
+  if (/frango|carne|peixe|ovo|omelete/.test(normalized)) return vegan
+    ? ["Lentilha cozida", "Grão-de-bico temperado", "Tofu grelhado"]
+    : ["Ovos ou omelete", "Peixe", "Frango ou carne magra"];
+  if (/arroz|batata|mandioca|aveia|tapioca|cereal/.test(normalized)) return glutenFree
+    ? ["Arroz", "Batata", "Mandioca ou tapioca"]
+    : ["Arroz", "Batata ou mandioca", "Aveia ou pão integral"];
+  if (/iogurte|leite|bebida vegetal/.test(normalized)) return dairyFree
+    ? ["Iogurte vegetal", "Bebida de soja", "Homus com legumes"]
+    : ["Iogurte natural", "Leite", "Queijo branco"];
+  if (/fruta|banana|maçã/.test(normalized)) return ["Banana", "Maçã ou pera", "Fruta da estação"];
+  if (/feijão|lentilha|grão-de-bico|leguminosa/.test(normalized)) return ["Feijão", "Lentilha", "Grão-de-bico"];
+  if (/salada|legume|folha|cenoura/.test(normalized)) return ["Folhas variadas", "Legumes cozidos", "Vegetais da estação"];
+  return ["Alimento equivalente do mesmo grupo", "Opção da estação", "Alternativa compatível com suas restrições"];
 }
 
 export function estimateWaterIntake(weightKg: number) {
@@ -141,7 +232,7 @@ export function generateShoppingList(plan: MealPlan, mode: "economic" | "balance
     : mode === "economic" ? "Ovos e frango" : mode === "premium" ? "Peixe e cortes magros" : "Frango e ovos";
   const fruit = mode === "premium" ? "Frutas variadas da estação" : "Banana e maçã";
   const carb = mode === "economic" ? "Arroz, mandioca e aveia" : mode === "premium" ? "Arroz integral, quinoa e batata-doce" : "Arroz, batata e aveia";
-  return [
+  const base = [
     { name: protein, quantity: mode === "premium" ? "2,5 kg variados" : "2 kg variados", category: "Proteínas" },
     { name: "Feijão ou leguminosa", quantity: "1 kg", category: "Proteínas" },
     { name: carb, quantity: "Porções para 7 dias", category: "Carboidratos" },
@@ -151,6 +242,11 @@ export function generateShoppingList(plan: MealPlan, mode: "economic" | "balance
     { name: /iogurte vegetal/.test(joined) ? "Iogurte vegetal" : "Iogurte natural", quantity: "7 porções", category: "Laticínios e alternativas" },
     { name: mode === "economic" ? "Temperos básicos" : "Azeite, ervas e temperos", quantity: "Conforme necessidade", category: "Outros" },
   ];
+  const planSpecific = plan.meals
+    .flatMap((meal) => meal.items)
+    .filter((item) => /tofu|homus|castanha|amendoim|bebida vegetal/i.test(item.name))
+    .map((item) => ({ name: item.name, quantity: "Porções para 7 dias", category: "Itens do plano" }));
+  return [...base, ...planSpecific.filter((item, index, items) => items.findIndex((candidate) => candidate.name === item.name) === index)];
 }
 
 export type { NutritionProfile, MealPlan, Macros };

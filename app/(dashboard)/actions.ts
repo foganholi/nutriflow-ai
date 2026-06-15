@@ -80,7 +80,7 @@ export async function createAndPersistPlan() {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const [{ data: profile }, { data: preferences }, { data: subscription }, { count: recentPlans }] = await Promise.all([
     supabase.from("profiles").select("age,sex,height_cm,current_weight_kg,target_weight_kg,goal,activity_level,consent_lgpd").eq("id", user.id).single(),
-    supabase.from("nutrition_preferences").select("restrictions,allergies,preferred_foods,disliked_foods,budget_level,meals_per_day,special_condition,training_frequency,training_type").eq("user_id", user.id).maybeSingle(),
+    supabase.from("nutrition_preferences").select("restrictions,allergies,preferred_foods,disliked_foods,budget_level,cooking_time,brazilian_food_mode,meals_per_day,special_condition,training_frequency,training_type").eq("user_id", user.id).maybeSingle(),
     supabase.from("subscriptions").select("plan,status").eq("user_id", user.id).single(),
     supabase.from("meal_plans").select("id", { count: "exact", head: true }).eq("user_id", user.id).gte("created_at", weekAgo),
   ]);

@@ -21,22 +21,46 @@ describe("nutrition engine", () => {
   });
   it("generates vegan choices when requested", () => {
     const result = generateMealPlan({ ...profile, restrictions: ["vegano"] });
-    expect(result.meals.some((m) => /lentilha|grão/i.test(m.items[0].name))).toBe(true);
+    expect(result.meals.flatMap((meal) => meal.items).some((item) => /lentilha|grão/i.test(item.name))).toBe(true);
   });
   it("adapts dairy for lactose restriction", () => {
     const result = generateMealPlan({ ...profile, mealsPerDay: 6, restrictions: ["intolerância à lactose"] });
     expect(result.meals).toHaveLength(6);
-    expect(result.meals.some((m) => /iogurte vegetal/i.test(m.items[0].name))).toBe(true);
-    expect(result.meals.some((m) => /iogurte natural/i.test(m.items[0].name))).toBe(false);
+    const items = result.meals.flatMap((meal) => meal.items);
+    expect(items.some((item) => /iogurte vegetal/i.test(item.name))).toBe(true);
+    expect(items.some((item) => /iogurte natural/i.test(item.name))).toBe(false);
   });
   it("replaces egg-based meals for egg allergy", () => {
     const result = generateMealPlan({ ...profile, mealsPerDay: 6, allergies: ["ovo"] });
-    expect(result.meals.some((m) => /omelete/i.test(m.items[0].name))).toBe(false);
+    expect(result.meals.flatMap((meal) => meal.items).some((item) => /omelete/i.test(item.name))).toBe(false);
   });
   it("creates distinct shopping modes", () => {
     const plan = generateMealPlan(profile);
     const economic = generateShoppingList(plan, "economic");
     const premium = generateShoppingList(plan, "premium");
     expect(economic.map((item) => item.name).join(" ")).not.toEqual(premium.map((item) => item.name).join(" "));
+  });
+  it("generates composed meals with a consistent calorie total", () => {
+    const result = generateMealPlan({ ...profile, mealsPerDay: 6 });
+    const items = result.meals.flatMap((meal) => meal.items);
+    expect(result.meals.every((meal) => meal.items.length >= 2)).toBe(true);
+    expect(result.meals.reduce((total, meal) => total + meal.calories, 0)).toBe(result.calories);
+    expect(result.meals.every((meal) => meal.calories === meal.items.reduce((total, item) => total + item.calories, 0))).toBe(true);
+    expect(items.reduce((total, item) => total + item.protein, 0)).toBe(result.macros.protein);
+    expect(items.reduce((total, item) => total + item.carbs, 0)).toBe(result.macros.carbs);
+    expect(items.reduce((total, item) => total + item.fat, 0)).toBe(result.macros.fat);
+  });
+  it("uses budget and cooking time when selecting foods", () => {
+    const economic = generateMealPlan({ ...profile, budget: "low", cookingTime: "little", mealsPerDay: 5 });
+    const premium = generateMealPlan({ ...profile, budget: "high", cookingTime: "plenty", mealsPerDay: 5 });
+    const economicFoods = economic.meals.flatMap((meal) => meal.items.map((item) => item.name)).join(" ");
+    const premiumFoods = premium.meals.flatMap((meal) => meal.items.map((item) => item.name)).join(" ");
+    expect(economicFoods).toMatch(/frango|amendoim/i);
+    expect(premiumFoods).toMatch(/peixe|castanhas/i);
+    expect(economicFoods).not.toEqual(premiumFoods);
+  });
+  it("includes a preferred food in a moderate snack portion", () => {
+    const result = generateMealPlan({ ...profile, preferredFoods: ["mamão"] });
+    expect(result.meals.flatMap((meal) => meal.items).some((item) => /mamão/i.test(item.name))).toBe(true);
   });
 });

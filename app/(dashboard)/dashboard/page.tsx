@@ -71,7 +71,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <section>
           <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black">Plano alimentar de hoje</h2><Link className="text-sm font-black text-emerald-700" href="/meal-plan">Ver completo</Link></div>
           {[...grouped.values()].length
-            ? <div className="grid gap-3 sm:grid-cols-2">{[...grouped.values()].slice(0, 4).map((meal) => <MealPlanCard key={meal.name} meal={meal} />)}</div>
+            ? <div className="grid gap-3 sm:grid-cols-2">{[...grouped.values()].slice(0, 4).map((meal) => <MealPlanCard key={meal.name} meal={meal} restrictions={[...(preferences?.restrictions ?? []), ...(preferences?.allergies ?? [])]} />)}</div>
             : <div className="card p-6"><p className="font-black">Nenhum plano salvo.</p><p className="muted mt-2 text-sm">Abra o gerador para começar.</p></div>}
         </section>
         <aside className="space-y-4">
