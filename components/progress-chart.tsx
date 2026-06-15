@@ -21,7 +21,7 @@ export function ProgressChart({ data }: { data: Point[] }) {
           <XAxis dataKey="date" fontSize={12} />
           <YAxis domain={["dataMin - 1", "dataMax + 1"]} fontSize={12} />
           <Tooltip />
-          <Line type="monotone" dataKey="weight" stroke="#6d4aff" strokeWidth={3} dot={{ r: 4, fill: "#06b6d4" }} name="Peso (kg)" />
+          <Line type="monotone" dataKey="weight" stroke="#346f82" strokeWidth={3} dot={{ r: 4, fill: "#78aeb2" }} name="Peso (kg)" />
         </LineChart>
       </ResponsiveContainer>
     </div>

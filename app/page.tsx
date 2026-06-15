@@ -22,7 +22,6 @@ export default function Home() {
         <section className="grid-pattern overflow-hidden pb-24 pt-16 md:pb-32 md:pt-24">
           <div className="container relative z-10 grid items-center gap-14 lg:grid-cols-[1.05fr_.95fr]">
             <div className="relative">
-              <div className="absolute -left-20 -top-20 size-44 rounded-full bg-violet-400/15 blur-3xl" />
               <span className="pill relative inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold"><BadgeCheck size={14}/> NUTRITION INTELLIGENCE PLATFORM</span>
               <h1 className="mt-6 max-w-3xl text-5xl font-black leading-[1.03] tracking-[-.05em] md:text-7xl">
                 Sua alimentação em um <span className="text-gradient">novo sistema.</span>
@@ -38,7 +37,7 @@ export default function Home() {
                 {["Sem cartão", "Plano gratuito", "Privacidade por padrão"].map((item) => <span key={item} className="flex items-center gap-1.5"><Check className="text-emerald-600" size={16}/>{item}</span>)}
               </div>
               <div className="mt-8 grid max-w-xl grid-cols-3 gap-2">
-                {[[Zap, "Motor", "Adaptativo"], [DatabaseZap, "Dados", "Protegidos"], [BrainCircuit, "Insights", "Práticos"]].map(([Icon, label, value]) => <div className="rounded-2xl border border-indigo-200/40 bg-white/50 p-3 backdrop-blur-md dark:border-indigo-800/40 dark:bg-indigo-950/20" key={String(label)}><Icon className="text-cyan-500" size={17}/><p className="mt-2 text-[10px] font-black uppercase tracking-wider text-indigo-500">{String(label)}</p><p className="text-xs font-bold">{String(value)}</p></div>)}
+                {[[Zap, "Motor", "Adaptativo"], [DatabaseZap, "Dados", "Protegidos"], [BrainCircuit, "Insights", "Práticos"]].map(([Icon, label, value]) => <div className="rounded-2xl border border-slate-900/8 bg-white/45 p-3 dark:border-white/10 dark:bg-white/5" key={String(label)}><Icon className="text-[#4b8990]" size={17}/><p className="mt-2 text-[10px] font-black uppercase tracking-wider text-[#52727a]">{String(label)}</p><p className="text-xs font-bold">{String(value)}</p></div>)}
               </div>
             </div>
             <LandingDashboard />
@@ -47,11 +46,11 @@ export default function Home() {
 
         <section id="beneficios" className="py-24">
           <div className="container">
-            <div className="mx-auto max-w-2xl text-center"><p className="text-sm font-black uppercase tracking-[.2em] text-indigo-600">Inteligência aplicada à rotina</p><h2 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Tecnologia útil, sem perder o lado humano</h2></div>
+            <div className="mx-auto max-w-2xl text-center"><p className="text-sm font-black uppercase tracking-[.2em] text-[#346f82]">Inteligência aplicada à rotina</p><h2 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Tecnologia útil, sem perder o lado humano</h2></div>
             <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {benefits.map(([Icon, title, text]) => (
                 <article key={String(title)} className="card p-6 transition hover:-translate-y-1 hover:shadow-xl">
-                  <span className="mb-5 grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-violet-500/15 to-cyan-400/15 text-indigo-600 dark:text-cyan-300"><Icon size={21}/></span>
+                  <span className="mb-5 grid size-11 place-items-center rounded-2xl bg-[#e7efee] text-[#346f82] dark:bg-[#263438] dark:text-[#8fc2c4]"><Icon size={21}/></span>
                   <h3 className="text-lg font-black">{String(title)}</h3><p className="muted mt-2 text-sm leading-6">{String(text)}</p>
                 </article>
               ))}
@@ -60,13 +59,13 @@ export default function Home() {
         </section>
 
         <section id="como-funciona" className="tech-panel rounded-none border-x-0 py-24 text-white">
-          <div className="container relative z-10"><p className="text-sm font-black uppercase tracking-[.2em] text-cyan-300">Como funciona</p><h2 className="mt-3 text-4xl font-black">Do dado à ação em três etapas</h2>
+          <div className="container relative z-10"><p className="text-sm font-black uppercase tracking-[.2em] text-[#9fcacc]">Como funciona</p><h2 className="mt-3 text-4xl font-black">Do dado à ação em três etapas</h2>
             <div className="mt-12 grid gap-8 md:grid-cols-3">
               {[
                 ["01", "Conte sua rotina", "Informe objetivo, preferências, restrições, tempo e orçamento."],
                 ["02", "Receba seu plano", "O motor aplica regras nutricionais conservadoras e cria opções realistas."],
                 ["03", "Acompanhe e ajuste", "Registre hábitos e evolução. Recalcule quando sua rotina mudar."],
-              ].map(([n,t,d]) => <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm" key={n}><span className="bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-5xl font-black text-transparent">{n}</span><h3 className="mt-3 text-xl font-black">{t}</h3><p className="mt-2 leading-7 text-indigo-100/65">{d}</p></div>)}
+              ].map(([n,t,d]) => <div className="rounded-2xl border border-white/10 bg-white/[.035] p-6" key={n}><span className="text-5xl font-black text-[#8fc2c4]">{n}</span><h3 className="mt-3 text-xl font-black">{t}</h3><p className="mt-2 leading-7 text-slate-200/70">{d}</p></div>)}
             </div>
           </div>
         </section>
@@ -79,8 +78,8 @@ export default function Home() {
         <section className="pb-24">
           <div className="container grid gap-5 lg:grid-cols-2">
             <article className="tech-panel rounded-[28px] p-8 text-white">
-              <div className="relative z-10"><ShieldCheck className="text-cyan-300" size={30} />
-              <p className="mt-6 text-sm font-black uppercase tracking-[.2em] text-cyan-300">Privacidade como produto</p>
+              <div className="relative z-10"><ShieldCheck className="text-[#9fcacc]" size={30} />
+              <p className="mt-6 text-sm font-black uppercase tracking-[.2em] text-[#9fcacc]">Privacidade como produto</p>
               <h2 className="mt-3 text-3xl font-black">Seus dados não são parte do cardápio.</h2>
               <p className="mt-4 leading-7 text-white/70">Acesso isolado por usuário, RLS no PostgreSQL, exportação, revogação de consentimento e exclusão de conta.</p>
               <Link className="btn-secondary mt-6" href="/privacy">Como protegemos seus dados</Link></div>

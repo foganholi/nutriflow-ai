@@ -3,7 +3,7 @@ import { Logo } from "@/components/logo";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-indigo-950/10 bg-white/30 py-10 backdrop-blur-xl dark:bg-indigo-950/10">
+    <footer className="border-t border-slate-900/10 bg-white/35 py-10 dark:bg-slate-900/10">
       <div className="container grid gap-8 md:grid-cols-[1fr_auto]">
         <div>
           <Logo />
